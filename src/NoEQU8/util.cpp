@@ -2,13 +2,13 @@
 
 ULONG KeMessageBox(PCWSTR title, PCWSTR text, ULONG_PTR type)
 {
-	UNICODE_STRING u_title = { 0 };
-	UNICODE_STRING u_text = { 0 };
+	UNICODE_STRING uTitle = { 0 };
+	UNICODE_STRING uText = { 0 };
 
-	RtlInitUnicodeString(&u_title, title);
-	RtlInitUnicodeString(&u_text, text);
+	RtlInitUnicodeString(&uTitle, title);
+	RtlInitUnicodeString(&uText, text);
 
-	ULONG_PTR args[] = { (ULONG_PTR)&u_text, (ULONG_PTR)&u_title, type };
+	ULONG_PTR args[] = { (ULONG_PTR)&uText, (ULONG_PTR)&uTitle, type };
 	ULONG response = 0;
 
 	ExRaiseHardError(STATUS_SERVICE_NOTIFICATION, 3, 3, args, 1, &response);
@@ -79,6 +79,7 @@ PVOID FindPattern(PCHAR base, DWORD length, PCHAR pattern, PCHAR mask)
 	for (DWORD i = 0; i <= length; ++i)
 	{
 		PVOID addr = &base[i];
+		
 		if (CheckMask((PCHAR)addr, pattern, mask))
 		{
 			return addr;
@@ -97,7 +98,7 @@ PVOID FindPatternImage(PCHAR base, PCHAR pattern, PCHAR mask)
 	for (DWORD i = 0; i < headers->FileHeader.NumberOfSections; ++i)
 	{
 		PIMAGE_SECTION_HEADER section = &sections[i];
-		if (memcmp(section->Name, ".text", 5) == 0)
+		if ('EGAP' == *(PINT)section->Name || memcmp(section->Name, ".text", 5) == 0)
 		{
 			match = FindPattern(base + section->VirtualAddress, section->Misc.VirtualSize, pattern, mask);
 			if (match)
